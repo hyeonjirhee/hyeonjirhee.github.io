@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>구글 앱스 스크립트로 정보 전달</title>
+  <script>
+    function submitForm(event) {
+      event.preventDefault();
+  
+      const form = event.target;
+      const formData = new FormData(form);
+  
+      // 체크박스 values 수집
+      const interests = [];
+      form.querySelectorAll('input[name="interests"]:checked').forEach(checkbox => {
+        interests.push(checkbox.value);
+      });
+  
+      // 기존 entries 수집
+      const entries = [...formData.entries()].filter(([key]) => key !== 'interests');
+  
+      // interests 값을 배열로 수동 추가
+      if (interests.length > 0) {
+        entries.push(['interests', interests.join(', ')]);
+      }
+  
+      const encodedData = entries.map(([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+      ).join('&');
+  
+      fetch("https://script.google.com/macros/s/AKfycbwG4B7dFghySHwM0Hvz9OuaaqbehUzjD8tCB0n3u-OfwMkzUxulbJ_5_HiZh_8-xKANaQ/exec", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: encodedData
+      }).then(() => {
+        alert("정보가 성공적으로 전송되었습니다!");
+        form.reset();
+      }).catch(error => {
+        alert("전송 실패: " + error.message);
+      });
+    }
+  
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("googleForm").addEventListener("submit", submitForm);
+    });
+  </script>
+  
+</head>
+
+<body>
+  <main style="text-align: center;">
+    <h2>정보 제출 폼</h2>
+
+    <form id="googleForm">
+      <section>
+        <hr>
+        <h3>기본 정보</h3>
+        이름: <input type="text" name="text" placeholder="이름 입력" required><br><br>
+        이메일: <input type="email" name="email" placeholder="example@duksung.ac.kr" required><br><br>
+        전공:
+        <input list="majorsList" name="majors" placeholder="전공 선택" required>
+        <datalist id="majorsList">
+          <option value="디지털소프트웨어공학부">
+          <option value="사이버보안전공">
+          <option value="컴퓨터공학전공">
+          <option value="소프트웨어전공">
+        </datalist>
+      </section>
+
+      <section>
+        <hr>
+        <h3>추가 정보</h3>
+        관심 분야:<br>
+        <input type="checkbox" name="interests" value="웹&앱">웹&앱
+        <input type="checkbox" name="interests" value="인공지능">인공지능
+        <input type="checkbox" name="interests" value="사이버보안">사이버보안
+        <input type="checkbox" name="interests" value="빅데이터">빅데이터
+        <input type="checkbox" name="interests" value="사물인터넷">사물인터넷<br><br>
+
+        성별:
+        <input type="radio" name="gender" value="여자">여자
+        <input type="radio" name="gender" value="남자">남자<br><br>
+
+        학년:
+        <select name="grade">
+          <option value="">(선택 안 함)</option>
+          <option value="1학년">1학년</option>
+          <option value="2학년">2학년</option>
+          <option value="3학년">3학년</option>
+          <option value="4학년">4학년</option>
+        </select><br><br>
+
+        자기소개:<br>
+        <textarea name="intro" rows="4" cols="40" placeholder="간단한 소개를 입력하세요."></textarea><br><br>
+      </section>
+
+      <button type="submit">제출하기</button>
+    </form>
+  </main>
+</body>
+</html>
